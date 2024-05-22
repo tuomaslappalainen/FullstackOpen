@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Weather from "./Weather";
 
 const Country = ({ name, capital, population, languages, flagUrl }) => {
@@ -9,7 +9,7 @@ const Country = ({ name, capital, population, languages, flagUrl }) => {
       <p>population {population}</p>
       <h3>languages</h3>
       <ul>
-        {languages.map(language => (
+        {Array.isArray(languages) && languages.map(language => (
           <li key={language.name}>{language.name}</li>
         ))}
       </ul>

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import getAll from "./services/restCountries";
 import FilterCountries from "./components/FilterCountries";
-import Countries from "./components/Country";
+import Countries from "./components/Countries";
+
 
 function App() {
   const [newSearch, setNewSearch] = useState("");
