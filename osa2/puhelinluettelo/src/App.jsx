@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import dataService from './Services/persons'
+import dataService from "./services/persons"
 
 const FilterForm = (props) => {
   console.log(props)
@@ -10,6 +10,7 @@ const FilterForm = (props) => {
     </div>
   )
 }
+
 const Person = (props) => {
   console.log(props)
   return (
@@ -41,10 +42,12 @@ const Notification = ({ message }) => {
   if (message === null) {
     return null
   }
+
   return (
     <p>{message}</p>
   )
 }
+
 const App = () => {
   const [persons, setPersons] = useState([])
   const [filter, setFilter] = useState('')
