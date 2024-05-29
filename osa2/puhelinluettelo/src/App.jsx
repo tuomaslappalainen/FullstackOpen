@@ -1,135 +1,139 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import dataService from "./services/persons"
-
-const FilterForm = (props) => {
-  console.log(props)
-  return (
-    <div>
-      filter shown with: <input onChange={props.handleFilterChange}/>
-    </div>
-  )
-}
-
-const Person = (props) => {
-  console.log(props)
-  return (
-    <div>
-      {props.person.name} {props.person.number}
-      <input type='button' value='delete' onClick={() => {
-        console.log(props.person.id)
-        axios.delete(`http://localhost:3001/persons/${props.person.id}`).then(response => {
-          console.log(response)
-          window.location.reload()
-        })
-      }}/>
-    </div>
-  )
-}
-
-const People = (props) => {
-  console.log(props)
-  return (
-    <div>
-      {props.list.filter(person => person.name.toLowerCase().includes(props.filter.toLowerCase())).map(person =>
-        <Person key={person.name} person={person}/>
-      )}
-    </div>
-  )
-}
-
-const Notification = ({ message }) => {
-  if (message === null) {
-    return null
-  }
-
-  return (
-    <p>{message}</p>
-  )
-}
+import React, { useState, useEffect } from "react";
+import NewPerson from "./components/AddPerson";
+import FilterPerson from "./components/FilterPerson";
+import Persons from "./components/Persons";
+import personDB from "./services/personDB";
+import Notification from "./components/Notification";
 
 const App = () => {
-  const [persons, setPersons] = useState([])
-  const [filter, setFilter] = useState('')
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNewNumber] = useState('')
-  const [notification, setNotification] = useState(null)
+  const [persons, setPersons] = useState([]);
+  const [newName, setNewName] = useState("");
+  const [newNumber, setNewNumber] = useState("");
+  const [newSearch, setNewSearch] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  const handleNameChange = event => {
+    setNewName(event.target.value);
+  };
+
+  const handleNumberChange = event => {
+    setNewNumber(event.target.value);
+  };
+
+  const handleSearchChange = event => {
+    setNewSearch(event.target.value);
+  };
+
+  const handleDeletePerson = (name, id) => {
+    return () => {
+      if (window.confirm(`Poistetaanko ${name} ?`)) {
+        personDB
+          .deletePerson(id)
+          .then(() => {
+            setPersons(persons.filter(n => n.id !== id));
+            setErrorMessage(`Poistettiin ${name}`);
+            setNewName("");
+            setNewNumber("");
+          })
+          .catch(error => {
+            setPersons(persons.filter(n => n.name !== name));
+            setErrorMessage(`Käyttäjä ${name} on jo poistettu palvelimelta.`);
+          });
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 3000);
+      }
+    };
+  };
 
   useEffect(() => {
-    console.log('effect')
-    dataService.getAll().then(response => {
-      console.log('promise fulfilled')
-      setPersons(response.data)
-      console.log(persons)
-    })
-  }, [])
+    personDB.getAll().then(response => {
+      setPersons(response);
+    });
+  }, []);
 
-  const addPerson = (e) => {
-    e.preventDefault()
+  const addPerson = event => {
+    event.preventDefault();
 
-    const names = persons.map(p => {
-      return p.name
-    })
-    if(names.includes(newName)) {
-      document.querySelector('.notification').style = 'color: red'
-      setNotification(`${newName} is already added`)
-      setTimeout(() => {setNotification(null)}, 5000)
-      return
-    }
-
-    const person = {
+    const personObject = {
       name: newName,
-      number: newNumber
+      number: newNumber,
+      id: Math.floor(Math.random() * 101)
+    };
+
+    if (
+      persons.filter(person => person.name === personObject.name).length > 0
+    ) {
+      if (
+        window.confirm(
+          `${
+            personObject.name
+          } on jo luettelossa, korvataanko vanha numero uudella?`
+        )
+      ) {
+        const previousPerson = persons.find(n => n.name === newName);
+        personDB
+          .update(previousPerson.id, { ...previousPerson, number: newNumber })
+          .then(updatedPerson => {
+            setPersons(
+              persons.map(n => (n.name === newName ? updatedPerson : n))
+            );
+          })
+          .catch(error => {
+            console.log(error);
+            setErrorMessage("Päivitys epäonnistui");
+          });
+        setPersons(persons.concat(personObject));
+        setErrorMessage(`Muutettiin ${personObject.name} numero`);
+        setNewName("");
+        setNewNumber("");
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 3000);
+      }
+    } else {
+      personDB
+        .create(personObject)
+        .then(newPerson => {
+          setPersons(persons.concat(newPerson));
+          setErrorMessage(`Lisättiin ${personObject.name}`);
+          setNewName("");
+          setNewNumber("");
+        })
+        .catch(error => {
+          setErrorMessage(`${error.response.data.error}`);
+          console.log(error.response.data);
+        });
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 3000);
     }
-
-    dataService.create(person).then(response => {
-      console.log(response)
-
-      document.querySelector('.notification').style = 'color: green'
-      setNotification(`${person.name} was added to the server`)
-      setTimeout(() => {setNotification(null)}, 5000)
-
-      setPersons(persons.concat(response.data))
-      setNewName('')
-      setNewNumber('')
-    })
-  }
-
-
-  const handleFilterChange = (e) => {
-    setFilter(e.target.value)
-  }
-  const handleNameChange = (e) => {
-    setNewName(e.target.value)
-  }
-  const handleNumChange = (e) => {
-    setNewNumber(e.target.value)
-  }
+  };
 
   return (
     <div>
-      <h2>Phonebook</h2>
-      <div className='notification'>
-        <Notification message={notification}/>
-      </div>
-      <FilterForm handleFilterChange={handleFilterChange}/>
-      <h2>Add a new</h2>
-      <form onSubmit={addPerson}>
-        <div>
-          name: <input value={newName} onChange={handleNameChange}/>
-        </div>
-        <div>
-          number: <input value={newNumber} onChange={handleNumChange}/>
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-      <h2>Numbers</h2>
-      <People list={persons} filter={filter}/>
+      <h2>Puhelinluettelo</h2>
+      <Notification message={errorMessage} />
+      <FilterPerson
+        newSearch={newSearch}
+        handleSearchChange={handleSearchChange}
+      />
+      <h3>lisää uusi</h3>
+      <NewPerson
+        newName={newName}
+        newNumber={newNumber}
+        handleNameChange={handleNameChange}
+        handleNumberChange={handleNumberChange}
+        addPerson={addPerson}
+      />
+      <h3>Numerot</h3>
+      <Persons
+        persons={persons}
+        newSearch={newSearch}
+        handleDeletePerson={handleDeletePerson}
+      />
     </div>
-  )
+  );
+};
 
-}
-
-export default App
+export default App;
