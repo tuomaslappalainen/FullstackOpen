@@ -45,8 +45,7 @@ const totalLikes  = array => {
     const authorWithMostLikes = _.maxBy(likesByAuthor, 'likes');
     return authorWithMostLikes;
   }
-
-
+  
   module.exports = {
     dummy,
     totalLikes,
