@@ -39,7 +39,7 @@ const App = () => {
 
   const handleLogout = () => {
     setUser(null)
-    window.localStorage.removeItem('loggedInUser')
+    window.localStorage.removeItem('loggedBloglistUser')
   }
 
   const handleLogin = async (event) => {
@@ -50,14 +50,14 @@ const App = () => {
         username, password,
       })
       window.localStorage.setItem(
-        'loggedNoteappUser', JSON.stringify(user)
+        'loggedBloglistUser', JSON.stringify(user)
       ) 
-      noteService.setToken(user.token)
+      blogService.setToken(user.token)
       setUser(user)
       setUsername('')
       setPassword('')
     } catch (exception) {
-      setMessage('wrong credentials')
+      setMessage('Wrong credentials')
       setTimeout(() => {
         setMessage(null)
       }, 5000)

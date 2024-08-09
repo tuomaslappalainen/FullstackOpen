@@ -1,78 +1,105 @@
 const jwt = require('jsonwebtoken')
 const blogRouter = require('express').Router()
 const Blog = require('../models/blog')
-const User = require('../models/users')
-const userExtractor = require('../utils/middleware').userExtractor
+const middleware = require('../utils/middleware')
 
-
-blogRouter.get('/', async (request, response) => {
-    const blogs = await Blog.find({}).populate('user', {username: 1, name: 1})
-    response.json(blogs)
+blogRouter.get('/', async (req, res) => {
+  const blogs = await Blog
+    .find({}).populate('user', { username: 1, name: 1, id: 1 })
+  res.json(blogs)
 })
 
-blogRouter.post('/', userExtractor, async (request, response) => {
-    const {title, author, url, likes} = request.body
-
-    const user = request.user
-
-    if(!title || !url){
-        return response.status(400).json({ error: 'title and url are required' })
-    }
-
-    const blog = new Blog({
-        title, 
-        author, 
-        url, 
-        likes: likes || 0,
-        user: user.id
-    })
-    const savedBlog = await blog.save()
-    user.blogs = user.blogs.concat(savedBlog._id)
-    await user.save()
-    response.status(201).json(savedBlog)
-})
-
-blogRouter.delete('/:id', userExtractor, async (request, response) => {
-    const { id } = request.params
-
-    const user = request.user
-
-    const blog = await Blog.findById(id)
-
-    if(!blog){
-        return response.status(404).json({ error: 'blog not found' })
-    }
-
-    if (blog.user.toString() === user.id.toString()) {
-        await Blog.findByIdAndDelete(id)
-        response.status(204).end()
+blogRouter.get('/:id', async (req, res, next) => {
+  try {
+    const blog = await Blog.findById(req.params.id)
+    if (blog) {
+      res.json(blog)
     } else {
-        response.status(401).json({ error: 'user not authorized' })
+      res.status(404).end()
     }
-
+  } catch (error) {
+    next(error)
+  }
 })
 
-blogRouter.put('/:id', async (request, response) => {
-    const body = request.body
+blogRouter.post('/', middleware.userExtractor, async (request, response) => {
 
-    const blog = {
-        likes: body.likes,
-        title: body.title,
-        author: body.author,
-        url: body.url
+  const { title, author, url, likes } = request.body
+  
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  console.log(decodedToken)
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'token invalid' })
+  }
+
+  const userExists = request.user
+
+  if (!title || !url) {
+    return response.status(400).json({ error: 'Title and URL must be provided' })
+  }
+
+
+  const blog = new Blog({
+      title: title,
+      author: author,
+      url: url,
+      likes: likes !== undefined ? likes : 0,
+      user: userExists.id
+  })
+
+  try {
+    const savedBlog = await blog.save()
+    userExists.blogs = userExists.blogs.concat(savedBlog._id)
+    await userExists.save()
+
+    response.status(201).json(savedBlog)
+  } catch (error) {
+    response.status(400).json({ error: error.message })
+  }
+})
+
+blogRouter.delete('/:id', middleware.userExtractor, async (req, res, next) => {
+  const decodedToken = jwt.verify(req.token, process.env.SECRET)
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'token invalid' })
+  }
+
+  const userExists = req.user
+
+  try {
+    const deletedBlog = await Blog.findByIdAndDelete(req.params.id)
+    if (deletedBlog) {
+      userExists.blogs = userExists.blogs.filter(blogId => blogId.toString()!== req.params.id)
+      await userExists.save()
+      res.status(204).end()
+    } else {
+      res.status(404).end()
     }
+  } catch (error) {
+    next(error)
+  }
+})
 
-    try {
-        const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true, runValidators: true, context: 'query' })
-        if (updatedBlog) {
-          response.json(updatedBlog)
-        } else {
-          response.status(404).end()
-        }
-      } catch (error) {
-        console.log(error)
-        response.status(400).json({ error: 'Failed to update blog' })
-      }
+blogRouter.put('/:id', async (req, res, next) => {
+  const { title, author, url, likes } = req.body
+
+  const updatedBlog = {
+    title: title,
+    author: author,
+    url: url,
+    likes: likes!== undefined? likes : 0,
+  }
+
+  try {
+    const updatedResult = await Blog.findByIdAndUpdate(req.params.id, updatedBlog, { new: true })
+    if (updatedResult) {
+      res.json(updatedResult)
+    } else {
+      res.status(404).end()
+    }
+  } catch (error) {
+    next(error)
+  }
 })
 
 module.exports = blogRouter
