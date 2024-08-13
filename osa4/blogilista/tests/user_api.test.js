@@ -1,9 +1,9 @@
 const { test, describe, beforeEach, after } = require('node:test')
 const assert = require('node:assert')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const supertest = require('supertest')
 const mongoose = require('mongoose')
-const helper = require('../utils/test_helper')
+const helper = require('../utils/list_helper')
 const User = require('../models/user')
 const app = require('../app')
 const api = supertest(app)
@@ -74,7 +74,7 @@ describe('when a property needed to create a user is missing', () => {
         const usersAtStart = await helper.usersInDb()
     
         const newUser = {
-          username: 'm',
+          username: 'mm',
           name: 'Ma',
           password: 'sekret',
         }
