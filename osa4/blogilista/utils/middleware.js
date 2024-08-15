@@ -15,12 +15,12 @@ const unknownEndpoint = (_request, response) => {
 }
 
 const tokenExtractor = (request, response, next) => {
-  const token = request.get('authorization')
-  if (token && token.startsWith('Bearer ')) {
-    request.token = token.replace('Bearer ', '')
+  const authorization = request.get('authorization');
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+      request.token = authorization.substring(7);
   }
-  next()
-}
+  next();
+};
 
 const userExtractor = (request, response, next) => {
   const decodedToken = jwt.verify(request.token, process.env.SECRET)
@@ -39,7 +39,7 @@ const userExtractor = (request, response, next) => {
    .catch(error => next(error))
 }
 
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, _request, response, next) => {
   logger.error(error.message)
 
   if (error.name === 'CastError') {

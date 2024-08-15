@@ -26,7 +26,7 @@ blogRouter.post('/', middleware.userExtractor, async (request, response) => {
 
   const { title, author, url, likes } = request.body
   
-  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  const decodedToken = jwt.verify(request.token, process.env.SECRET);
   console.log(decodedToken)
   if (!decodedToken.id) {
     return response.status(401).json({ error: 'token invalid' })

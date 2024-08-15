@@ -56,6 +56,7 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
+
     } catch (exception) {
       setMessage('Wrong credentials')
       setTimeout(() => {
@@ -67,7 +68,7 @@ const App = () => {
   if (!user) {
     return (
       <div>
-        <h2>Login</h2>
+        <h2>Login to application</h2>
         <Notification message={message} />
         <form onSubmit={handleLogin}>
         <div>

@@ -21,8 +21,8 @@ describe('when there is initially one user in db', () => {
     const usersAtStart = await helper.usersInDb()
 
     const newUser = {
-      username: 'ukko',
-      name: 'ukkeli',
+      username: 'Seppo',
+      name: 'Seppo Ruotsalainen',
       password: 'salainen',
     }
 
@@ -55,8 +55,8 @@ describe('when a property needed to create a user is missing', () => {
         const usersAtStart = await helper.usersInDb()
     
         const newUser = {
-          username: 'ukko2',
-          name: 'ukkeli2',
+          username: 'Seppo2',
+          name: 'Seppo Ruotsalainen',
           password: 'se',
         }
     
@@ -74,8 +74,8 @@ describe('when a property needed to create a user is missing', () => {
         const usersAtStart = await helper.usersInDb()
     
         const newUser = {
-          username: 'mm',
-          name: 'Ma',
+          username: 'Se',
+          name: 'Seppo Ruotsalainen',
           password: 'sekret',
         }
     
@@ -94,7 +94,7 @@ describe('when a property needed to create a user is missing', () => {
     
         const newUser = {
           username: 'root',
-          name: 'Mat',
+          name: 'Seppo Ruotsalainen',
           password: 'sekret',
         }
     
@@ -112,8 +112,8 @@ describe('when a property needed to create a user is missing', () => {
         const usersAtStart = await helper.usersInDb()
     
         const newUser = {
-          name: 'aa',
-          password: 'sekret',
+          name: 'Seppo3',
+          password: 'salainen2',
         }
     
         await api
@@ -130,8 +130,8 @@ describe('when a property needed to create a user is missing', () => {
         const usersAtStart = await helper.usersInDb()
     
         const newUser = {
-          username: 'ukko3',
-          name: 'ukkeli',
+          username: 'Seppo4',
+          name: 'Seppo Ruotsalainen',
         }
     
         await api

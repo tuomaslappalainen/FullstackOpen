@@ -23,23 +23,20 @@ beforeEach(async () => {
     await User.deleteMany({})
 
     const newUser = {
-        username: 'root',
-        name: 'root',
-        password: 'password',
+        username: 'admin',
+        name: 'admin',
+        password: 'esedu',
     }
 
     await api
         .post('/api/users')
         .send(newUser)
 
-    const result = await api
-        .post('/api/login')
-        .send(newUser)
+        const result = await api.post('/api/login').send(newUser);
+        token = result.body.token;
 
     console.log('result.body???', result.body)
     
-    
-    token = result.body.token
     console.log('token', token)
     
     assert.ok(token)
@@ -59,8 +56,8 @@ test('GET /api/blogs: blogs have identifier field id', async () => {
       .get('/api/blogs')
 
     response.body.forEach(blog => {
-    assert.ok(blog.hasOwnProperty('id'), 'Blog does not have an id field')
-    assert.equal(typeof blog.id, 'string', 'id field is not a string')
+    assert.ok(blog.hasOwnProperty('_id'), 'Blog does not have an id field')
+    assert.equal(typeof blog._id, 'string', 'id field is not a string')
   })
 })
 
@@ -84,7 +81,7 @@ describe('POST, adding a blog', () => {
     })
     
     test('POST /api/blogs: responds with 401 if token is missing', async () => {
-
+    
         const response = await api
           .post('/api/blogs')
           .send(newBlog)
@@ -92,7 +89,7 @@ describe('POST, adding a blog', () => {
           .expect(401)
           .expect('Content-Type', /application\/json/);
       
-        assert.ok(response.body.error);
+        assert.ok(response.body.error, 'Expected response body to contain an error message');
       })
     
     test('POST /api/blogs: defaults to 0 if likes property is missing', async () => {
