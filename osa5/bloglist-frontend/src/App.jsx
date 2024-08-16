@@ -3,6 +3,7 @@ import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from "./services/login"
 import Notification from './components/Notification'
+import './App.css'
 
 
 
@@ -12,6 +13,10 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const [message, setMessage] = useState(null)
+  const [messageType, setMessageType] = useState('')
+  const [newTitle, setNewTitle] = useState('')
+  const [newAuthor, setNewAuthor] = useState('')
+  const [newUrl, setNewUrl] = useState('')
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -58,12 +63,44 @@ const App = () => {
       setPassword('')
 
     } catch (exception) {
-      setMessage('Wrong credentials')
+      setMessage('Wrong username of password')
+      setMessageType('error')
       setTimeout(() => {
         setMessage(null)
+        setMessageType('')
       }, 5000)
     }
   }
+
+  const handleCreateBlog = async (event) => {
+    event.preventDefault()
+    try {
+      const newBlog = {
+        title: newTitle,
+        author: newAuthor,
+        url: newUrl
+    }
+
+    const savedBlog = await blogService.create(newBlog)
+    setBlogs(blogs.concat(savedBlog))
+    setNewTitle('')
+    setNewAuthor('')
+    setNewUrl('')
+    setMessage(`A new blog ${newTitle} by ${newAuthor} added`)
+    setMessageType('success')
+    setTimeout(() => {
+      setMessage(null)
+      setMessageType('')
+    }, 5000)
+  } catch (exception) {
+    setMessage('Error adding blog')
+    setMessageType('error')
+    setTimeout(() => {
+      setMessage(null)
+      setMessageType('')
+    }, 5000)
+  }
+}
 
   if (!user) {
     return (
@@ -91,18 +128,49 @@ const App = () => {
     </form></div>
   )
 }
-    
-
-
   return (
     <div>
-      <h2>{user.username}, logged in</h2>
+      <h1>Blogs</h1>
+      <h2>{user.username} logged in</h2>
       <button onClick={handleLogout}>Logout</button>
-      {/* lisää juttuja tänne myöhemmin */}
+      <Notification message={message}/>
+      <h2>Create new</h2>
+      <form onSubmit={handleCreateBlog}>
+        <div>
+          Title:
+          <input
+            type="text"
+            value={newTitle}
+            onChange={({ target }) => setNewTitle(target.value)}
+          />
+        </div>
+        <div>
+          Author:
+          <input
+          type="text"
+          value={newAuthor}
+          onChange={({ target }) => setNewAuthor(target.value)}
+          />
+        </div>
+        <div>
+          URL
+          <input
+          type="text"
+          value={newUrl}
+          onChange={({ target }) => setNewUrl(target.value)}
+          />
+        </div>
+        <button type="submit">Create</button>
+      </form>
+      <div>
+        {blogs.map(blog =>
+          <Blog key={blog.id} blog={blog} />
+        )}
+      </div>
     </div>
   )
-
 }
 
 export default App
+
 
