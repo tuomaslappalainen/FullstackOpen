@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 const BlogForm = ({ handleCreateBlog }) => {
   const [newTitle, setNewTitle] = useState('')
@@ -44,7 +44,7 @@ const BlogForm = ({ handleCreateBlog }) => {
         <button type="submit">Create</button>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default BlogForm;
+export default BlogForm

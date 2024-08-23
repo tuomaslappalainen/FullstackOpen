@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef} from 'react'
 import Blog from './components/Blog'
+import BlogForm from './components/BlogForm'
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from "./services/login"
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
-import Togglable from './components/Togglable'
-import BlogForm from './components/BlogForm'
 import './App.css'
 
 
@@ -15,6 +15,9 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [message, setMessage] = useState(null)
   const [messageType, setMessageType] = useState('')
+
+  const blogFormRef = useRef()
+  
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -65,53 +68,70 @@ const App = () => {
     }
   }
 
-  const handleCreateBlog = async ({ title, author, url }) => {
+  const handleCreateBlog = async (newBlog) => {
     try {
-      const newBlog = {
-        title,
-        author,
-        url
-      }
-
-    const savedBlog = await blogService.create(newBlog)
-    setBlogs(blogs.concat(savedBlog))
-    setMessage(`A new blog ${title} by ${author} added`)
-    setMessageType('success')
-    setTimeout(() => {
-      setMessage(null)
-      setMessageType('')
-    }, 5000)
-  } catch (exception) {
-    setMessage('Error adding blog')
-    setMessageType('error')
-    setTimeout(() => {
-      setMessage(null)
-      setMessageType('')
-    }, 5000)
+      const savedBlog = await blogService.create(newBlog)
+      setBlogs(blogs.concat(savedBlog))
+      blogFormRef.current.toggleVisibility()
+      setMessage(`A new blog "${savedBlog.title}" by ${savedBlog.author} added`)
+      setMessageType('success') 
+      setTimeout(() => {
+        setMessage(null)
+        setMessageType('') 
+      }, 5000)
+    } catch (exception) {
+      setMessage('Error adding a blog')
+      setMessageType('error') 
+      setTimeout(() => {
+        setMessage(null)
+        setMessageType('') 
+      }, 5000)
+    }
   }
+
+  const handleLike = async (blog) => {
+    const updatedBlog= {
+      ...blog,
+      likes: blog.likes + 1,
+      user: blog.user
+    }
+
+try {
+  const returnedBlog = await blogService.update(blog.id, updatedBlog)
+  setBlogs(blogs.map(b => (b.id === blog.id ? returnedBlog : b)))
+} catch (exception) {
+  setMessage('Error liking the blog')
+  setMessageType('error')
+  setTimeout(() => {
+    setMessage(null)
+    setMessageType('')
+  }, 5000)
 }
+
+  }
 
   if (!user) {
     return (
       <div>
-        <Notification message={message} />
+        <Notification message={message} type={messageType} />
        <LoginForm handleLogin={handleLogin} />
       </div>
    
   )
 }
   return (
+    
     <div>
       <h1>Blogs</h1>
       <h2>{user.username} logged in</h2>
       <button onClick={handleLogout}>Logout</button>
-      <Notification message={message}/>
-      <Togglable buttonLabel="New blog">
+      <Notification message={message} type={messageType} />
+      <Togglable buttonLabel="New blog" ref={blogFormRef}>
         <BlogForm handleCreateBlog={handleCreateBlog} />
       </Togglable>
       <div>
         {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} />
+          <Blog key={blog.id} blog={blog} handleLike={handleLike} />
         )}
       </div>
     </div>
