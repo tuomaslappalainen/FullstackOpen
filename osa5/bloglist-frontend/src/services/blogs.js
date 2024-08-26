@@ -28,4 +28,9 @@ const update = async (id, newObject) => {
   return response.data
 }
 
-export default { getAll, create, update,  setToken }
+const remove = async id => {
+  const config = {
+    headers:  { Authorization: token },
+  }
+}
+export default { getAll, create, update,  setToken, remove }

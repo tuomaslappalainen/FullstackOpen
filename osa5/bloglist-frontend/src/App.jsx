@@ -17,6 +17,8 @@ const App = () => {
   const [messageType, setMessageType] = useState('')
 
   const blogFormRef = useRef()
+
+  
   
 
   useEffect(() => {
@@ -56,14 +58,14 @@ const App = () => {
       window.localStorage.setItem(
         'loggedBloglistUser', JSON.stringify(user)
       )
-      blogService.setToken(user.token);
+      blogService.setToken(user.token)
       setUser(user);
     } catch (exception) {
-      setMessage('Wrong username or password');
-      setMessageType('error');
+      setMessage('Wrong username or password')
+      setMessageType('error')
       setTimeout(() => {
-        setMessage(null);
-        setMessageType('');
+        setMessage(null)
+        setMessageType('')
       }, 5000);
     }
   }
@@ -71,43 +73,72 @@ const App = () => {
   const handleCreateBlog = async (newBlog) => {
     try {
       const savedBlog = await blogService.create(newBlog)
-      setBlogs(blogs.concat(savedBlog))
-      blogFormRef.current.toggleVisibility()
+      setBlogs(blogs.concat(savedBlog));
+      blogFormRef.current.toggleVisibility();
       setMessage(`A new blog "${savedBlog.title}" by ${savedBlog.author} added`)
-      setMessageType('success') 
+      setMessageType('success')
       setTimeout(() => {
         setMessage(null)
-        setMessageType('') 
-      }, 5000)
+        setMessageType('')
+      }, 5000);
     } catch (exception) {
-      setMessage('Error adding a blog')
-      setMessageType('error') 
+      setMessage('Error adding a blog');
+      setMessageType('error');
       setTimeout(() => {
         setMessage(null)
-        setMessageType('') 
-      }, 5000)
+        setMessageType('')
+      }, 5000);
+    }
+  }
+  
+  const handleLike = async (id) => {
+    const blogToLike = blogs.find(b => b.id === id)
+    const updatedBlog = {
+      ...blogToLike,
+      likes: blogToLike.likes + 1
+    };
+  
+    try {
+      const returnedBlog = await blogService.update(id, updatedBlog)
+      // Varmistaa että blogin lisääjän nimi näkyy tykkäyksen jälkeen
+      const blogWithUser = {
+        ...returnedBlog,
+        user: blogToLike.user
+      };
+      setBlogs(blogs.map(blog => blog.id !== id ? blog : blogWithUser))
+    } catch (exception) {
+      setMessage('Error liking the blog')
+      setMessageType('error')
+      setTimeout(() => {
+        setMessage(null);
+        setMessageType('')
+      }, 5000);
     }
   }
 
-  const handleLike = async (blog) => {
-    const updatedBlog= {
-      ...blog,
-      likes: blog.likes + 1,
-      user: blog.user
+  const handleDelete = async (id) => {
+    const blogToDelete = blogs.find(b => b.id === id)
+    const confirmDelete = window.confirm(`Remove blog ${blogToDelete.title} by ${blogToDelete.author}?`)
+    if (confirmDelete) {
+      try {
+        await blogService.remove(id)
+        setBlogs(blogs.filter(blog => blog.id !== id))
+        setMessage(`Deleted blog ${blogToDelete.title}`)
+        setMessageType('success')
+        setTimeout(() => {
+          setMessage(null);
+          setMessageType('')
+        }, 5000);
+      } catch (exception) {
+        console.log(exception)
+        setMessage('Error deleting the blog')
+        setMessageType('error')
+        setTimeout(() => {
+          setMessage(null)
+          setMessageType('')
+        }, 5000)
+      }
     }
-
-try {
-  const returnedBlog = await blogService.update(blog.id, updatedBlog)
-  setBlogs(blogs.map(b => (b.id === blog.id ? returnedBlog : b)))
-} catch (exception) {
-  setMessage('Error liking the blog')
-  setMessageType('error')
-  setTimeout(() => {
-    setMessage(null)
-    setMessageType('')
-  }, 5000)
-}
-
   }
 
   if (!user) {
@@ -119,6 +150,9 @@ try {
    
   )
 }
+
+const sortedBlogs  = [...blogs].sort((a, b) => b.likes - a.likes);
+
   return (
     
     <div>
@@ -130,8 +164,8 @@ try {
         <BlogForm handleCreateBlog={handleCreateBlog} />
       </Togglable>
       <div>
-        {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} handleLike={handleLike} />
+        {sortedBlogs.map(blog =>
+          <Blog key={blog.id} blog={blog} user={user} handleLike={handleLike} handleDelete={handleDelete}/>
         )}
       </div>
     </div>
