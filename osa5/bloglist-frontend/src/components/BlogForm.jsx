@@ -6,12 +6,12 @@ const BlogForm = ({ handleCreateBlog }) => {
   const [newUrl, setNewUrl] = useState('')
 
   const onSubmit = (event) => {
-    event.preventDefault();
+    event.preventDefault()
     handleCreateBlog({ title: newTitle, author: newAuthor, url: newUrl })
     setNewTitle('')
     setNewAuthor('')
     setNewUrl('')
-  };
+  }
 
   return (
     <div>
@@ -44,7 +44,7 @@ const BlogForm = ({ handleCreateBlog }) => {
         <button type="submit">Create</button>
       </form>
     </div>
-  );
-};
+  )
+}
 
 export default BlogForm
