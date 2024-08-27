@@ -5,7 +5,7 @@ const Blog = ({ blog, user, handleLike, handleDelete }) => {
 
   const toggleVisibility = () => {
     setVisible(!visible)
-  };
+  }
 
   const canDelete = blog.user && blog.user.username === user.username
 
@@ -15,7 +15,7 @@ const Blog = ({ blog, user, handleLike, handleDelete }) => {
     border: 'solid',
     borderWidth: 1,
     marginBottom: 15
-  };
+  }
 
   return (
     <div style={blogStyle}>
@@ -24,18 +24,17 @@ const Blog = ({ blog, user, handleLike, handleDelete }) => {
       </div>
       {visible && (
         <div>
-          
-      <div>
-        {blog.likes} likes
-        <button onClick={() => handleLike(blog.id)}>like</button>
-      </div>
+          <div>
+            {blog.likes} likes
+            <button onClick={() => handleLike(blog.id)}>like</button>
+          </div>
 
-      <div>
+          <div>
         added by {blog.user && blog.user.name}
-      </div>
+          </div>
 
-      {canDelete && <button onClick={() => handleDelete(blog.id)}>delete</button>}
-      
+          {canDelete && <button onClick={() => handleDelete(blog.id)}>delete</button>}
+
         </div>
       )}
     </div>
