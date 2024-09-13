@@ -10,8 +10,9 @@ const addNewAnecdote = async (event) => {
     const content = event.target.anecdote.value
     event.target.anecdote.value = ''
     dispatch(addAnecdote(content))
-    dispatch(showNotification(`You added '${content}'`, 5))
+    dispatch(showNotification(`You added '${content}'`, 3))
   }
+  
 return (
 <div>
   <h2>create new</h2>
