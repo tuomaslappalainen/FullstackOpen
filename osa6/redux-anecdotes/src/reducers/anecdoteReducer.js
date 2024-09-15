@@ -12,6 +12,7 @@ const asObject = (anecdote) => {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 const initialState = anecdotesAtStart.map(asObject)
 
 const anecdoteSlice = createSlice({

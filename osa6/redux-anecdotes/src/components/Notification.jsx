@@ -8,7 +8,7 @@ const Notification = () => {
   }
 
   return (
-    <div style={{ border: 'solid', padding: 10, borderWidth: 1 }}>
+    <div style={{ border: 'solid', padding: 10, borderWidth: 2 }}>
       {notification}
     </div>
   )
