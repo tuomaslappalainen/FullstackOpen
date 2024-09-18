@@ -21,7 +21,7 @@
     {
       "content": "Premature optimization is the root of all evil.",
       "id": "25170",
-      "votes": 3
+      "votes": 4
     },
     {
       "votes": 1,
@@ -146,6 +146,11 @@
       "id": "ee41",
       "content": "Toimii",
       "votes": 0
+    },
+    {
+      "id": "dd9b",
+      "content": "nice",
+      "votes": 2
     }
   ]
 }

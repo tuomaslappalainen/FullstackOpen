@@ -1,0 +1,28 @@
+{
+  "anecdotes": [
+    {
+      "id": "3599",
+      "content": "Testi",
+      "important": false,
+      "votes": 7
+    },
+    {
+      "id": "8067",
+      "content": "aaaa",
+      "important": true,
+      "votes": 6
+    },
+    {
+      "id": "cd58",
+      "content": "noniin",
+      "important": true,
+      "votes": 4
+    },
+    {
+      "id": "ab20",
+      "content": "alright",
+      "important": true,
+      "votes": 3
+    }
+  ]
+}
