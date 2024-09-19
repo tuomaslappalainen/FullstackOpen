@@ -16,13 +16,43 @@
       "id": "cd58",
       "content": "noniin",
       "important": true,
-      "votes": 4
+      "votes": 5
     },
     {
       "id": "ab20",
       "content": "alright",
       "important": true,
+      "votes": 4
+    },
+    {
+      "id": "9d21",
+      "content": "aaaaaa",
+      "important": true,
+      "votes": 6
+    },
+    {
+      "id": "1e72",
+      "content": "Testi2",
+      "important": true,
+      "votes": 8
+    },
+    {
+      "id": "d3ed",
+      "content": "juuelikkäs",
+      "important": true,
+      "votes": 7
+    },
+    {
+      "id": "c865",
+      "content": "Testi3",
+      "important": true,
       "votes": 3
+    },
+    {
+      "id": "35cb",
+      "content": "Testi4",
+      "important": true,
+      "votes": 6
     }
   ]
 }
