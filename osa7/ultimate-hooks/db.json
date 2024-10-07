@@ -1,0 +1,41 @@
+{
+  "notes": [
+    {
+      "id": "1",
+      "content": "custom-hooks are awesome!"
+    },
+    {
+      "id": "2",
+      "content": "best feature ever <3"
+    },
+    {
+      "id": "aa24",
+      "content": "Testi"
+    },
+    {
+      "id": "437a",
+      "content": "Testi"
+    },
+    {
+      "id": "7744",
+      "content": "Testi2"
+    }
+  ],
+  "persons": [
+    {
+      "id": "1",
+      "name": "tyyppi",
+      "number": "040-5483923"
+    },
+    {
+      "id": "2",
+      "name": "heinz",
+      "number": "012-123123"
+    },
+    {
+      "id": "68ec",
+      "name": "heinzbeanz",
+      "number": "044-090909"
+    }
+  ]
+}
