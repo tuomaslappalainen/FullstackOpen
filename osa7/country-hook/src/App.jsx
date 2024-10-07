@@ -79,7 +79,7 @@ const App = () => {
   return (
     <div>
       <form onSubmit={fetch}>
-        <input {...nameInput} />
+        <input placeholder='Type country here...'{...nameInput} />
         <button>find</button>
       </form>
 
