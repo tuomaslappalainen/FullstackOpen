@@ -16,9 +16,9 @@ import {
 const Menu = () => {
   return (
     <div>
-       <Link to="/">anecdotes</Link> &nbsp;
-    <Link to="/create">create new</Link> &nbsp;
-    <Link to="/about">about</Link>
+       <Link to="/">Anecdotes</Link> &nbsp;
+    <Link to="/create">Create new</Link> &nbsp;
+    <Link to="/about">About</Link>
     </div>
   )
 }
@@ -81,7 +81,7 @@ const App = () => {
     setAnecdotes(anecdotes.map(a => a.id === id ? voted : a))
   }
 
-  
+
 
   return (
     <Router>
@@ -90,12 +90,13 @@ const App = () => {
       <Menu />
 
       {notification && <div className="notification">{notification}</div>}
+     
       <Routes>
 
       <Route path='/' element={<AnecdoteList anecdotes={anecdotes} />} />
       <Route path='/create' element={<CreateNew addNew={addNew} />} />
       <Route path='/about' element={<About />} />
-      <Route path='/anecdotes/:id' element={<SingleAnecdote anecdotes={anecdotes} />} />
+      <Route path='/anecdotes/:id' element={<SingleAnecdote anecdotes={anecdotes} onVote={vote} />} />
 
       </Routes>
       

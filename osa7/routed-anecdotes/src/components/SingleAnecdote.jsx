@@ -3,7 +3,7 @@ import {
   useParams
  } from 'react-router-dom'
 
- const SingleAnecdote = ({ anecdotes }) => {
+ const SingleAnecdote = ({ anecdotes, onVote }) => {
     const { id } = useParams()
     const anecdote = anecdotes.find(a => a.id === Number(id))
   
@@ -16,7 +16,9 @@ import {
          <h2>{anecdote.content}</h2>
       <div><h3>by {anecdote.author}</h3></div>
       <div>has {anecdote.votes} votes</div>
-      <div style={{marginTop: '5px', padding: '1px 0' }}></div>
+      <button onClick={() => onVote(anecdote.id)}>vote</button>
+
+      <div style={{marginTop: '10px', padding: '1px 0' }}></div>
       <div>for more info see <a href={anecdote.info}>{anecdote.info}</a></div>
       
       </div>
@@ -32,7 +34,8 @@ import {
         info: PropTypes.string,
         votes: PropTypes.number
       })
-    ).isRequired
+    ).isRequired,
+    onVote: PropTypes.func.isRequired
   }
 
   export default SingleAnecdote
