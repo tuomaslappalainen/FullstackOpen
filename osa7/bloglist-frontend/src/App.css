@@ -1,0 +1,17 @@
+body {
+    background-color: rgb(156, 156, 156);
+}
+
+
+h1 {
+color: rgb(1, 155, 60);
+}
+
+.success {
+    color:green;
+}
+
+.error {
+    color:red;
+}
+

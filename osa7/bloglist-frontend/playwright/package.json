@@ -1,0 +1,12 @@
+{
+  "name": "playwright",
+  "version": "1.0.0",
+  "description": "playwright testing",
+  "main": "index.js",
+  "scripts": {
+   "test": "playwright test",
+    "test:report": "playwright show-report"
+  },
+  "author": "",
+  "license": "ISC"
+}
