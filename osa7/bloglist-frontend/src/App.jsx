@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useQuery, useMutation, useQueryClient } from 'react-query'
 import Blog from './components/Blog'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
@@ -12,20 +13,42 @@ import './App.css'
 
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
+  const [blogs, setBlogs] = useState([])
   const { state, dispatch } = useNotification()
+  const queryClient = useQueryClient()
 
   const blogFormRef = useRef()
 
-
-
-
+  const {data: blogsData, isLoading, isError} = useQuery('blogs', blogService.getAll)
+  
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs(blogs)
-    )
-  }, [])
+    if (blogsData) {
+      setBlogs(blogsData);
+    }
+  }, [blogsData])
+
+const createBlogMutation = useMutation(blogService.create, {
+  onSuccess: (newBlog) => {
+    queryClient.invalidateQueries('blogs')
+    dispatch({ type: 'SET_NOTIFICATION', payload: { message: `A new blog "${newBlog.title}" by ${newBlog.author} added`, type: 'success' } })
+    },
+    onError: () => {
+      dispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Error adding a blog', type: 'error' } })
+    }
+  })
+
+  const deleteBlogMutation = useMutation(blogService.remove, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('blogs');
+      dispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Blog deleted', type: 'success' } })
+    },
+    onError: () => {
+      dispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Error deleting the blog', type: 'error' } })
+    }
+  })
+
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -67,55 +90,51 @@ const App = () => {
   }
 
   const handleCreateBlog = async (newBlog) => {
-    try {
-      const savedBlog = await blogService.create(newBlog)
-      const blogWithUser = {
-        ...savedBlog,
-        user: user
-        }
-      setBlogs(blogs.concat(blogWithUser))
-      blogFormRef.current.toggleVisibility()
-      dispatch({ type: 'SET_NOTIFICATION', payload: { message: `A new blog "${savedBlog.title}" by ${savedBlog.author} added`, type: 'success' } })
-    } catch (exception) {
-      dispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Error adding a blog', type: 'error' } })
-    }
+    createBlogMutation.mutate(newBlog)
   }
+
 
   const handleLike = async (id) => {
-    const blogToLike = blogs.find(b => b.id === id)
-    const updatedBlog = {
-      ...blogToLike,
-      likes: blogToLike.likes + 1
-    }
-
     try {
-      const returnedBlog = await blogService.update(id, updatedBlog)
-      // Varmistaa että blogin lisääjän nimi näkyy tykkäyksen jälkeen
-      const blogWithUser = {
-        ...returnedBlog,
-        user: blogToLike.user
-      }
-      setBlogs(blogs.map(blog => blog.id !== id ? blog : blogWithUser))
-    } catch (exception) {
-      dispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Error liking the blog', type: 'error' } });
+      const blogToUpdate = blogs.find(blog => blog.id === id)
+      const updatedBlog = { ...blogToUpdate, likes: blogToUpdate.likes + 1 }
+      await blogService.update(id, updatedBlog)
+      setBlogs(blogs.map(blog => (blog.id === id ? updatedBlog : blog)))
+    } catch (error) {
+      console.error('Error liking the blog:', error)
     }
   }
 
-  const handleDelete = async (id) => {
-    const blogToDelete = blogs.find(b => b.id === id)
-    const confirmDelete = window.confirm(`Remove blog ${blogToDelete.title} by ${blogToDelete.author}?`)
+  const handleDelete = async (blog) => {
+    console.log('Attempting to delete blog:', blog)
+    const confirmDelete = window.confirm(`Remove blog ${blog.title} by ${blog.author}?`)
     if (confirmDelete) {
       try {
-        await blogService.remove(id)
-        setBlogs(blogs.filter(blog => blog.id !== id))
-        dispatch({ type: 'SET_NOTIFICATION', payload: { message: `Blog "${blogToDelete.title}" by ${blogToDelete.author} removed`, type: 'success' } })
-  
-      } catch (exception) {
-        console.log(exception)
-        dispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Error deleting the blog', type: 'error' } })
+        console.log('Confirmed deletion for blog ID:', blog.id)
+        deleteBlogMutation.mutate(blog.id, {
+          onSuccess: () => {
+            console.log('Blog deleted successfully:', blog.id)
+            setBlogs(blogs.filter(b => b.id !== blog.id))
+          },
+          onError: (error) => {
+            console.error('Error deleting the blog:', error)
+          }
+        })
+      } catch (error) {
+        console.error('Error in handleDelete:', error)
       }
     }
   }
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (isError) {
+    return <div>Error fetching data</div>
+  }
+
+   
 
   if (!user) {
     return (
@@ -127,22 +146,30 @@ const App = () => {
     )
   }
 
-  const sortedBlogs = [...blogs].sort((a, b) => b.likes - a.likes)
-
   return (
     <div>
-      <h1>Blogs</h1>
-      <h2>{user.username} logged in</h2>
-      <button onClick={handleLogout}>Logout</button>
-      <Notification/>
-      <Togglable buttonLabel="New blog" ref={blogFormRef}>
-        <BlogForm handleCreateBlog={handleCreateBlog} />
-      </Togglable>
-      <div>
-        {sortedBlogs.map(blog =>
-          <Blog key={blog.id} blog={blog} user={user} handleLike={handleLike} handleDelete={handleDelete} />
-        )}
-      </div>   
+      <Notification />
+      {user === null ? (
+        <LoginForm handleLogin={handleLogin} />
+      ) : (
+        <div>
+          <h2>{user.name} logged in <button onClick={handleLogout}>logout</button></h2>
+          <Togglable buttonLabel="Create new blog" ref={blogFormRef}>
+            <BlogForm handleCreateBlog={handleCreateBlog} />
+          </Togglable>
+          <div>
+            {blogs.map(blog => (
+              <Blog
+                key={blog.id}
+                blog={blog}
+                handleLike={handleLike}
+                handleDelete={handleDelete}
+                user={user}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

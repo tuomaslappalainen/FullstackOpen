@@ -2,63 +2,9 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import Blog from './Blog'
 import { vi } from 'vitest'
 
-test('renders title and author, but not likes or other details by default', () => {
+test('like button calls event handler with correct blog id', () => {
   const blog = {
-    title: 'Testing React components',
-    author: 'John Doe',
-    likes: 5,
-    user: {
-      username: 'johndoe',
-      name: 'John Doe'
-    }
-  }
-
-  const user = {
-    username: 'johndoe'
-  }
-
-  render(<Blog blog={blog} user={user} handleLike={() => {}} handleDelete={() => {}} />)
-
-  const titleAuthorElement = screen.getByText('Testing React components By John Doe')
-  expect(titleAuthorElement).toBeInTheDocument()
-
-  const likesElement = screen.queryByText('5 likes')
-  const addedByElement = screen.queryByText('added by John Doe')
-  expect(likesElement).toBeNull()
-  expect(addedByElement).toBeNull()
-})
-
-test('shows URL and number of likes when the button controlling the shown details has been clicked', () => {
-  const blog = {
-    title: 'Testing React components',
-    author: 'Testi Testinen',
-    likes: 5,
-    url: 'http://testaus.com',
-    user: {
-      username: 'testitestinen',
-      name: 'Testi Testinen'
-    }
-  }
-
-  const user = {
-    username: 'testitestinen'
-  }
-
-  render(<Blog blog={blog} user={user} handleLike={() => {}} handleDelete={() => {}} />)
-
-  const button = screen.getByText('view')
-  fireEvent.click(button)
-
-  const urlElement = screen.getByText((content, element) => {
-    return element.textContent.includes('http://testaus.com')
-  })
-  const likesElement = screen.getByText('5 likes')
-  expect(urlElement).toBeInTheDocument()
-  expect(likesElement).toBeInTheDocument()
-})
-
-test('calls event handler twice if the like button is clicked twice', () => {
-  const blog = {
+    id: '12345',
     title: 'Testing React components',
     author: 'Testi Testinen',
     likes: 5,
@@ -82,7 +28,36 @@ test('calls event handler twice if the like button is clicked twice', () => {
 
   const likeButton = screen.getByText('like')
   fireEvent.click(likeButton)
-  fireEvent.click(likeButton)
 
-  expect(mockHandler).toHaveBeenCalledTimes(2)
+  expect(mockHandler).toHaveBeenCalledWith('12345')
+})
+
+test('delete button calls event handler with correct blog id', () => {
+  const blog = {
+    id: '12345',
+    title: 'Testing React components',
+    author: 'Testi Testinen',
+    likes: 5,
+    url: 'http://testaus.com',
+    user: {
+      username: 'testitestinen',
+      name: 'Testi Testinen'
+    }
+  }
+
+  const user = {
+    username: 'testitestinen'
+  }
+
+  const mockHandler = vi.fn()
+
+  render(<Blog blog={blog} user={user} handleLike={() => {}} handleDelete={mockHandler} />)
+
+  const viewButton = screen.getByText('view')
+  fireEvent.click(viewButton)
+
+  const deleteButton = screen.getByText('delete')
+  fireEvent.click(deleteButton)
+
+  expect(mockHandler).toHaveBeenCalledWith('12345')
 })

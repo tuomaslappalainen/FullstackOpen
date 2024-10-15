@@ -33,7 +33,7 @@ const Blog = ({ blog, user, handleLike, handleDelete }) => {
         added by {blog.user && blog.user.name}
           </div>
 
-          {canDelete && <button onClick={() => handleDelete(blog.id)}>delete</button>}
+          {canDelete && <button onClick={() => handleDelete(blog)}>delete</button>}
 
         </div>
       )}
