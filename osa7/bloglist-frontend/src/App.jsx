@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import Blog from './components/Blog'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
@@ -7,15 +8,17 @@ import blogService from './services/blogs'
 import loginService from './services/login'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
+import UserList from './components/UserList'
 import { useNotification } from './NotificationContext'
+import { useUser } from './UserContext'
 import './App.css'
 
 
 
 const App = () => {
-  const [user, setUser] = useState(null)
+  const { user, dispatch: userDispatch } = useUser()
   const [blogs, setBlogs] = useState([])
-  const { state, dispatch } = useNotification()
+  const { state, dispatch: notificationDispatch } = useNotification()
   const queryClient = useQueryClient()
 
   const blogFormRef = useRef()
@@ -31,20 +34,20 @@ const App = () => {
 const createBlogMutation = useMutation(blogService.create, {
   onSuccess: (newBlog) => {
     queryClient.invalidateQueries('blogs')
-    dispatch({ type: 'SET_NOTIFICATION', payload: { message: `A new blog "${newBlog.title}" by ${newBlog.author} added`, type: 'success' } })
+    notificationDispatch({ type: 'SET_NOTIFICATION', payload: { message: `A new blog "${newBlog.title}" by ${newBlog.author} added`, type: 'success' } })
     },
     onError: () => {
-      dispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Error adding a blog', type: 'error' } })
+      notificationDispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Error adding a blog', type: 'error' } })
     }
   })
 
   const deleteBlogMutation = useMutation(blogService.remove, {
     onSuccess: () => {
       queryClient.invalidateQueries('blogs');
-      dispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Blog deleted', type: 'success' } })
+      notificationDispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Blog deleted', type: 'success' } })
     },
     onError: () => {
-      dispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Error deleting the blog', type: 'error' } })
+      notificationDispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Error deleting the blog', type: 'error' } })
     }
   })
 
@@ -52,29 +55,20 @@ const createBlogMutation = useMutation(blogService.create, {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      dispatch({ type: 'CLEAR_NOTIFICATION' })
+      notificationDispatch({ type: 'CLEAR_NOTIFICATION' })
     }, 3000)
     return () => {
       clearTimeout(timer)
     }
-  }, [state.message, dispatch])
+  }, [state.message, notificationDispatch])
 
-  useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
-    }
-  }, [])
+  
 
-  const handleLogout = () => {
-    setUser(null)
-    window.localStorage.removeItem('loggedBloglistUser')
-  }
 
-  const handleLogin = async (username, password) => {
+
+  const handleLogin = async ({ username, password }) => {
     try {
+      console.log('Attempting to log in with:', { username, password })
       const user = await loginService.login({
         username, password,
       })
@@ -82,10 +76,15 @@ const createBlogMutation = useMutation(blogService.create, {
         'loggedBloglistUser', JSON.stringify(user)
       )
       blogService.setToken(user.token)
-      setUser(user)
-      dispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Login successful', type: 'success' } })
+      userDispatch({ type: 'SET_USER', payload: user })
+      notificationDispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Login successful', type: 'success' } })
     } catch (exception) {
-      dispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Wrong credentials', type: 'error' } })
+      console.error('Login failed:', exception)
+      if (exception.response && exception.response.status === 401) {
+        notificationDispatch({ type: 'SET_NOTIFICATION', payload: { message: 'Invalid username or password', type: 'error' } })
+      } else {
+        notificationDispatch({ type: 'SET_NOTIFICATION', payload: { message: 'An error occurred during login', type: 'error' } })
+      }
     }
   }
 
@@ -147,13 +146,17 @@ const createBlogMutation = useMutation(blogService.create, {
   }
 
   return (
+    <Router>
     <div>
       <Notification />
-      {user === null ? (
-        <LoginForm handleLogin={handleLogin} />
-      ) : (
+      <nav>
+        <Link to="/">Blogs</Link>&nbsp;
+        <Link to="/users">Users</Link>
+      </nav>
+      <Routes>
+        <Route path="/" element={
         <div>
-          <h2>{user.name} logged in <button onClick={handleLogout}>logout</button></h2>
+          <h2>{user.name} logged in <button onClick={() => userDispatch({ type: 'CLEAR_USER' })}>logout</button></h2>
           <Togglable buttonLabel="Create new blog" ref={blogFormRef}>
             <BlogForm handleCreateBlog={handleCreateBlog} />
           </Togglable>
@@ -169,8 +172,11 @@ const createBlogMutation = useMutation(blogService.create, {
             ))}
           </div>
         </div>
-      )}
+      } />
+      <Route path="/users" element={<UserList />} />
+      </Routes>
     </div>
+   </Router>
   )
 }
 
