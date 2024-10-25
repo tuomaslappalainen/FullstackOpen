@@ -6,4 +6,11 @@ const getAll = async () => {
   return response.data
 }
 
-export default { getAll }
+const getById = async (id) => {
+  console.log('Sending GET request to:', `${baseUrl}/${id}`) 
+  const response = await axios.get(`${baseUrl}/${id}`)
+  console.log('Response from GET request:', response) 
+  return response.data
+}
+
+export default { getAll, getById }

@@ -9,6 +9,7 @@ import loginService from './services/login'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
 import UserList from './components/UserList'
+import UserDetail from './components/UserDetail'
 import { useNotification } from './NotificationContext'
 import { useUser } from './UserContext'
 import './App.css'
@@ -174,6 +175,7 @@ const createBlogMutation = useMutation(blogService.create, {
         </div>
       } />
       <Route path="/users" element={<UserList />} />
+      <Route path="/users/:id" element={<UserDetail />} />
       </Routes>
     </div>
    </Router>
