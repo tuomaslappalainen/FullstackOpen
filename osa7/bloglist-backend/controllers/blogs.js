@@ -8,7 +8,6 @@ blogRouter.get('/', async (req, res) => {
     .find({}).populate('user', { username: 1, name: 1, id: 1 })
   res.json(blogs)
 })
-
 blogRouter.get('/:id', async (req, res, next) => {
   try {
     const blog = await Blog.findById(req.params.id)

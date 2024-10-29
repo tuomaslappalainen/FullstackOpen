@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import Blog from './components/Blog'
+import BlogView from './components/BlogView'
+import BlogList from './components/BlogList'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
 import blogService from './services/blogs'
@@ -176,6 +178,8 @@ const createBlogMutation = useMutation(blogService.create, {
       } />
       <Route path="/users" element={<UserList />} />
       <Route path="/users/:id" element={<UserDetail />} />
+      <Route path="/" element={<BlogList blogs={blogs} user={user} handleLike={handleLike} handleDelete={handleDelete} />} />
+      <Route path="/blogs/:id" element={<BlogView blogs={blogs} user={user} handleLike={handleLike} handleDelete={handleDelete} />} />
       </Routes>
     </div>
    </Router>
