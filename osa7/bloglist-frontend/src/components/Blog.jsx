@@ -12,7 +12,7 @@ const Blog = ({ blog, user, handleLike, handleDelete }) => {
   const canDelete = blog.user && blog.user.username === user.username
 
   const blogStyle = {
-    paddingTop: 5,
+    paddingTop: 10,
     paddingLeft: 5,
     border: 'solid',
     borderWidth: 1,

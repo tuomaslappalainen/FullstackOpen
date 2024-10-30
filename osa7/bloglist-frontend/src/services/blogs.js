@@ -3,7 +3,7 @@ const baseUrl = '/api/blogs'
 
 let token = null
 
-const setToken = (newToken) => {
+const setToken = newToken => {
   token = `Bearer ${newToken}`
 }
 
@@ -42,4 +42,18 @@ const getBlogById = async (id) => {
   return response.data
 }
 
-export default { getAll, create, update,  setToken, remove, getBlogById }
+const getComments = async (id) => {
+  const response = await axios.get(`${baseUrl}/${id}/comments`)
+  return response.data
+}
+
+const addComment = async (id, comment) => {
+  const config = {
+    headers: { Authorization: token },
+  }
+  console.log('sending request ', comment)
+  const response = await axios.post(`${baseUrl}/${id}/comments`, { content: comment.content }, config)
+  return response.data
+}
+
+export default { getAll, create, update,  setToken, remove, getBlogById, getComments, addComment }

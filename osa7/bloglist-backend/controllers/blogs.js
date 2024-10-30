@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken')
 const blogRouter = require('express').Router()
 const Blog = require('../models/blog')
 const middleware = require('../utils/middleware')
+const { default: mongoose } = require('mongoose')
 
 blogRouter.get('/', async (req, res) => {
   const blogs = await Blog
@@ -98,6 +99,32 @@ blogRouter.put('/:id', async (req, res, next) => {
     }
   } catch (error) {
     next(error)
+  }
+})
+
+blogRouter.get('/:id/comments', async (request, response) => {
+  const blog = await Blog.findById(request.params.id)
+  if (blog) {
+    response.json(blog.comments)
+  } else {
+    response.status(404).end()
+  }
+})
+
+blogRouter.post('/:id/comments', async (request, response) => {
+  const { content } = request.body
+  console.log('Request body', request.body)
+  const blog = await Blog.findById(request.params.id)
+
+  if (blog) {
+    const comment = { content }
+    blog.comments = blog.comments.concat(comment)
+    await blog.save()
+    console.log('saved comment:', comment);
+    
+    response.status(201).json(comment)
+  } else {
+    response.status(404).end()
   }
 })
 
